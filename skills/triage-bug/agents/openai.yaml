@@ -1,0 +1,5 @@
+interface:
+  display_name: "Triage bug"
+  short_description: "Gain a shared understanding of a bug. A pre-requisite for using the to-bug-report skill."
+policy:
+  allow_implicit_invocation: false

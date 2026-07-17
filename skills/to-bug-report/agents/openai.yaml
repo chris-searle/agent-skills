@@ -1,0 +1,3 @@
+interface:
+  display_name: "To bug report"
+  short_description: "Create and publish a bug report from the current chat context"
