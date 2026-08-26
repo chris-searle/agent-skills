@@ -6,7 +6,7 @@ description: Review the changes since a fixed point (commit, branch, tag, or mer
 Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
 
 - **Standards** — does the code conform to this repo's documented coding standards?
-- **Spec** — does the code faithfully implement the originating issue / PRD / spec / bug report?
+- **Spec** — does the code faithfully implement the originating issue / PRD / spec / bug report? This includes **story traceability**: whether the ticket's claimed `Fulfils`/`Contributes to` relationships match the observable implementation and whether the spec's fulfilment table is accurate.
 
 Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
 
@@ -67,13 +67,15 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 
 - The diff command and commit list.
 - The path or fetched contents of the spec.
-- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong. Quote the spec line for each finding. Under 400 words."
+- The brief: "Report: (a) requirements the spec asked for that are missing or partial; (b) behaviour in the diff that wasn't asked for (scope creep); (c) requirements that look implemented but where the implementation looks wrong; and (d) for every user story named by the ticket, whether the diff proves it Fulfilled, only Contributes, or does not support the claim. Check the spec's fulfilment table for stale or premature status. A story is Fulfilled only when its complete user-visible outcome is implemented and verified; preparatory configuration or types are not enough. Quote the spec or ticket line for each finding. Under 500 words."
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
 ### 5. Aggregate
 
 Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings — the two axes are deliberately separate (see _Why two axes_).
+
+Within `## Spec`, include a compact `Story traceability` subsection listing each ticket-linked `US-nn` as **Fulfilled**, **Contributes**, or **Unsupported**, with the acceptance evidence. Report the exact fulfilment-table update warranted by the review. Code review is read-only: do not edit the spec or tracker unless the user separately requested that mutation.
 
 End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes — that's the reranking the separation exists to prevent.
 

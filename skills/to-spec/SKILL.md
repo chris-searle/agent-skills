@@ -30,15 +30,17 @@ The solution to the problem, from the user's perspective.
 
 ## User Stories
 
-A LONG, numbered list of user stories. Each user story should be in the format of:
+A LONG, numbered list of user stories. Give every story a stable identifier (`US-01`, `US-02`, ...). Each user story should be in the format of:
 
-1. As an <actor>, I want a <feature>, so that <benefit>
+1. **US-01.** As an <actor>, I want a <feature>, so that <benefit>
 
 <user-story-example>
-1. As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
+1. **US-01.** As a mobile bank customer, I want to see balance on my accounts, so that I can make better informed decisions about my spending
 </user-story-example>
 
 This list of user stories should be extremely extensive and cover all aspects of the feature.
+
+Immediately before the list, include a `### Fulfilment tracking` table with `Status`, `User stories`, and `Evidence` columns. New stories default to **Open** unless the repository already contains verified evidence of their complete user-visible outcome. Do not mark a story fulfilled merely because preparatory configuration, types, or extension points exist. Explain this completion rule in one concise sentence above the table.
 
 ## Implementation Decisions
 
@@ -77,3 +79,5 @@ Any further notes about the feature.
 4. At this point you should ask the user to review the spec and confirm that it is complete and accurate. If they have any feedback, make the necessary changes and republish the spec.
 
 5. Once the spec is approved, ask the user if they want to break it down into tickets. If they do, tell them to invoke the `/to-tickets` skill to break the spec down into tickets and publish them to the issue tracker.
+
+Preserve story identifiers and the fulfilment table in every later spec revision. Status changes require acceptance evidence, not editorial judgement alone.

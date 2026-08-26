@@ -37,6 +37,13 @@ Break the work into **tracer bullet** tickets.
 
 Give each ticket its **blocking edges** — the other tickets that must complete before it can start. A ticket with no blockers can start immediately.
 
+Give each ticket explicit **user-story coverage** using the spec's stable `US-nn` identifiers. A ticket may contribute to a story without fulfilling it. Distinguish:
+
+- **Fulfils** — completing this ticket proves the story's complete user-visible outcome.
+- **Contributes to** — this ticket adds necessary groundwork, but later tickets are still required.
+
+Every in-scope user story must be referenced by at least one ticket, and every ticket must reference at least one story unless it is a clearly labelled enabling/refactoring ticket. Before asking for approval, check for uncovered stories and stories claimed as fulfilled by more than one ticket without a stated reason.
+
 **Wide refactors are the exception to vertical slicing.** A **wide refactor** is one mechanical change — rename a column, retype a shared symbol — whose **blast radius** fans across the whole codebase, so a single edit breaks thousands of call sites at once and no vertical slice can land green. Don't force it into a tracer bullet; sequence it as **expand–contract**. First expand: add the new form beside the old so nothing breaks. Then migrate the call sites over in batches sized by blast radius (per package, per directory), each batch its own ticket blocked by the expand, keeping CI green batch to batch because the old form still exists. Finally contract: delete the old form once no caller remains, in a ticket blocked by every migrate batch. When even the batches can't stay green alone, keep the sequence but let them share an integration branch that all block a final integrate-and-verify ticket — green is promised only there.
 
 ### 4. Quiz the user
@@ -46,6 +53,7 @@ Present the proposed breakdown as a numbered list. For each ticket, show:
 - **Title**: short descriptive name
 - **Blocked by**: which other tickets (if any) must complete first
 - **What it delivers**: the end-to-end behaviour this ticket makes work
+- **User stories**: which stories it fulfils and which it only contributes to
 
 Ask the user:
 
@@ -76,6 +84,8 @@ Do NOT close or modify any parent issue.
 
 **Status:** ready-for-agent
 
+**User stories:** Fulfils US-xx; contributes to US-yy, or "Enabling work — no user story fulfilled directly".
+
 - [ ] Acceptance criterion 1
 - [ ] Acceptance criterion 2
 
@@ -96,6 +106,11 @@ The end-to-end behaviour this ticket makes work, from the user's perspective —
 - [ ] Criterion 1
 - [ ] Criterion 2
 
+## User stories
+
+- Fulfils US-xx
+- Contributes to US-yy
+
 ## Blocked by
 
 - A reference to each blocking ticket, or "None — can start immediately".
@@ -105,3 +120,5 @@ The end-to-end behaviour this ticket makes work, from the user's perspective —
 In either form, avoid specific file paths or code snippets — they go stale fast. Exception: if a prototype produced a snippet that encodes a decision more precisely than prose can (state machine, reducer, schema, type shape), inline it and note briefly that it came from a prototype. Trim to the decision-rich parts — not a working demo, just the important bits.
 
 Once tickets have been created advise the user to invoke the `/implement` skill with a given ticket number in a fresh context window to implement the work described by the tickets.
+
+After publishing, update the source spec's fulfilment table so open stories list their planned ticket coverage as evidence, without marking them fulfilled. If the tracker is remote and the spec cannot be edited, report the exact mapping that should be added.
