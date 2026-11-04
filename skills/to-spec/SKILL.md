@@ -18,6 +18,14 @@ Check with the user that these seams match their expectations.
 
 3. Write the spec using the template below, then publish it to the project issue tracker.
 
+4. Create a spec branch for the work following the template `spec/<issue_id>/<short_slug>`
+
+5. Commit all updated files that may exist in the docs directory (typically ADRs and notes). Commit all changes from the the CONTEXT.md files and CONTEXT-MAP.md files to this spec branch.
+
+6. If there are any other files that have been edited but not yet committed verify with the user what should happen with the files and act accordingly.
+
+7. Push the spec branch to the remote repository.
+
 <spec-template>
 
 ## Problem Statement
