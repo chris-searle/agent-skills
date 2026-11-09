@@ -1,14 +1,15 @@
 ---
 name: code-review
-description: Review the changes since a fixed point (commit, branch, tag, or merge-base) along two axes — Standards (does the code follow this repo's documented coding standards?) and Spec (does the code match what the originating issue/PRD asked for?). Runs both reviews in parallel sub-agents and reports them side by side. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to "review since X".
+description: Review changes since a fixed point across Standards, Spec, and ADR compliance. Runs separate reviews in parallel sub-agents and reports each axis separately. Use when the user wants to review a branch, a PR, work-in-progress changes, or asks to "review since X".
 ---
 
-Two-axis review of the diff between `HEAD` and a fixed point the user supplies:
+Three-axis review of the diff between `HEAD` and a fixed point the user supplies:
 
 - **Standards** — does the code conform to this repo's documented coding standards?
 - **Spec** — does the code faithfully implement the originating issue / PRD / spec / bug report? This includes **story traceability**: whether the ticket's claimed `Fulfils`/`Contributes to` relationships match the observable implementation and whether the spec's fulfilment table is accurate.
+- **ADRs** — does the implementation comply with the project's applicable architectural decision records?
 
-Both axes run as **parallel sub-agents** so they don't pollute each other's context, then this skill aggregates their findings.
+Each axis runs as a separate **parallel sub-agent**, then this skill aggregates their findings.
 
 The issue tracker should have been provided to you — run `/initialize-project-skills` if `docs/agents/issue-tracker.md` is missing.
 
@@ -20,7 +21,7 @@ Whatever the user said is the fixed point — a commit SHA, branch name, tag, `m
 
 Capture the diff command once: `git diff <fixed-point>...HEAD` (three-dot, so the comparison is against the merge-base). Also note the list of commits via `git log <fixed-point>..HEAD --oneline`.
 
-Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. A bad ref or empty diff should fail here — not inside two parallel sub-agents.
+Before going further, confirm the fixed point resolves (`git rev-parse <fixed-point>`) and the diff is non-empty. Stop here for a bad ref or empty diff.
 
 ### 2. Identify the spec source
 
@@ -55,7 +56,21 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 - **Middle Man** — a class or function that mostly just delegates onward. → cut it, call the real target direct.
 - **Refused Bequest** — a subclass or implementer that ignores or overrides most of what it inherits. → drop the inheritance, use composition.
 
-### 4. Spawn both sub-agents in parallel
+### 4. Identify the ADR sources
+
+Read `docs/agents/domain.md` and the domain-doc guidance in `AGENTS.md` or `CLAUDE.md`, when present, for project-specific locations. These take precedence over the defaults below.
+
+The `/initialize-project-skills` layout and `/domain-modeling`, reached through `/new-feature`, use:
+
+- `docs/adr/` at the repo root for project-wide decisions.
+- `src/<context>/docs/adr/` for context-specific decisions in multi-context repos.
+- Root `CONTEXT-MAP.md` to locate contexts. Follow its paths to the relevant `CONTEXT.md` files and adjacent `docs/adr/` directories, including contexts outside `src/`.
+
+Check both project-wide and affected-context decisions. Follow any ADR indexes and links in these docs, and search repository paths for ADRs if the project uses another layout. `/to-spec` also expects existing ADRs to be respected but defines no additional location.
+
+Pass the discovered locations and relevant records to the ADR sub-agent. Missing domain docs or ADR directories are allowed. Do not create them or flag their absence as a defect.
+
+### 5. Spawn the sub-agents in parallel
 
 **Standards sub-agent prompt** — include:
 
@@ -71,19 +86,26 @@ Each smell reads *what it is* → *how to fix*; match it against the diff:
 
 If the spec is missing, skip the Spec sub-agent and note this in the final report.
 
-### 5. Aggregate
+**ADR sub-agent prompt** — include:
 
-Present the two reports under `## Standards` and `## Spec` headings, verbatim or lightly cleaned. Do **not** merge or rerank findings — the two axes are deliberately separate (see _Why two axes_).
+- The diff command and commit list.
+- The ADR discovery guidance from step 4, the locations searched, and paths or contents of discovered ADRs and indexes.
+- The brief: "Verify the implementation against applicable project-wide and context-specific ADRs. Read each record's scope, status, decision, and any superseding records before treating it as binding. Do not enforce proposed, rejected, or superseded decisions as current requirements. For each conflict introduced by the diff, cite the ADR path and decision text, the changed code location, and why the implementation conflicts. Inspect surrounding code and tests where needed to verify behaviour. If the diff changes an ADR, explain the changed decision and whether the implementation follows it; surface any unresolved conflict with an existing decision. Distinguish confirmed conflicts from ambiguities that need clarification. List the applicable ADRs checked and any limits to verification. If no ADRs exist or none apply, report that explicitly without treating it as a defect or claiming compliance. Review only; do not edit code or ADRs. Under 500 words."
+
+### 6. Aggregate
+
+Present the reports under `## Standards`, `## Spec`, and `## ADRs` headings, verbatim or lightly cleaned. Keep findings separate by axis without merging or reranking them. Include skipped or not-applicable outcomes and verification limits.
 
 Within `## Spec`, include a compact `Story traceability` subsection listing each ticket-linked `US-nn` as **Fulfilled**, **Contributes**, or **Unsupported**, with the acceptance evidence. Report the exact fulfilment-table update warranted by the review. Code review is read-only: do not edit the spec or tracker unless the user separately requested that mutation.
 
-End with a one-line summary: total findings per axis, and the worst issue _within each axis_ (if any). Don't pick a single winner across axes — that's the reranking the separation exists to prevent.
+End with a one-line summary of total findings per axis and the worst issue within each axis, if any. Distinguish a skipped or not-applicable review from a review that found no conflicts.
 
-## Why two axes
+## Why separate axes
 
 A change can pass one axis and fail the other:
 
 - Code that follows every standard but implements the wrong thing → **Standards pass, Spec fail.**
 - Code that does exactly what the issue asked but breaks the project's conventions → **Spec pass, Standards fail.**
+- Code that meets the spec and standards but contradicts an applicable architectural decision → **Standards and Spec pass, ADRs fail.**
 
 Reporting them separately stops one axis from masking the other.
